@@ -1,6 +1,6 @@
 // Import the functions you need from the Firebase SDKs
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js';
-import { getDatabase, ref, set, get, update, child, query, orderByKey, limitToFirst, startAt } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js';
+import { getDatabase, ref, set, get, update, query, orderByKey, limitToFirst } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js';
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -85,12 +85,21 @@ function loadDomains() {
 // Handle voting
 window.vote = function(domainName, voteType) {
     const domainRef = ref(db, 'domains/' + domainName);
-    update(domainRef, {
-        [voteType]: (domain[voteType] || 0) + 1
-    }).then(() => {
-        loadDomains();
+    get(domainRef).then((snapshot) => {
+        if (snapshot.exists()) {
+            const domain = snapshot.val();
+            update(domainRef, {
+                [voteType]: (domain[voteType] || 0) + 1
+            }).then(() => {
+                loadDomains();
+            }).catch((error) => {
+                console.error('Error voting:', error);
+            });
+        } else {
+            console.error('Domain does not exist.');
+        }
     }).catch((error) => {
-        console.error('Error voting:', error);
+        console.error('Error retrieving domain:', error);
     });
 };
 
