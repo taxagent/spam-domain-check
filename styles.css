@@ -5,47 +5,73 @@ body {
 }
 
 header {
-    background-color: #333;
-    color: #fff;
-    padding: 15px;
+    background-color: #4CAF50;
+    color: white;
     text-align: center;
+    padding: 1em;
 }
 
-#ad-banner {
-    margin: 10px 0;
+.ad-banner {
+    text-align: center;
+    margin: 1em 0;
 }
 
-main {
-    padding: 20px;
+.main-container {
+    padding: 1em;
+    max-width: 800px;
+    margin: auto;
 }
 
-#search-section, #add-section, #pagination {
-    margin-bottom: 20px;
+#domain-form {
+    margin-bottom: 1em;
 }
 
-#domain-form input, #domain-form button {
-    padding: 10px;
-    margin: 5px;
+#domain-input {
+    padding: 0.5em;
+    width: calc(100% - 120px);
+}
+
+button {
+    padding: 0.5em 1em;
+    margin-left: 10px;
+}
+
+.btn {
+    border: none;
+    cursor: pointer;
+}
+
+.btn-danger {
+    background-color: #f44336;
+    color: white;
+}
+
+.btn-success {
+    background-color: #4CAF50;
+    color: white;
 }
 
 #domains {
-    border: 1px solid #ddd;
-    padding: 10px;
-    margin-bottom: 20px;
+    margin-top: 1em;
 }
 
 .domain-item {
-    margin-bottom: 10px;
-    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5em;
     border-bottom: 1px solid #ddd;
 }
 
 .vote-buttons {
     display: flex;
     gap: 10px;
-    margin-top: 10px;
 }
 
-.vote-buttons button {
-    padding: 5px 10px;
+button i {
+    margin-right: 5px;
+}
+
+#prev-btn, #next-btn {
+    margin-top: 1em;
 }
