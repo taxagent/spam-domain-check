@@ -1,14 +1,13 @@
-// scripts.js
-
 // Import the functions you need from the Firebase SDKs
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+import { getDatabase, ref, set, get, update, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-analytics.js";
-import { getFirestore, collection, addDoc, getDocs, query, where, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
     apiKey: "AIzaSyCbSCWDbBLiOdeFtFNo0ZBKhrDjVUr17r0",
     authDomain: "spam-domain-checker-d8640.firebaseapp.com",
+    databaseURL: "https://spam-domain-checker-d8640-default-rtdb.firebaseio.com",
     projectId: "spam-domain-checker-d8640",
     storageBucket: "spam-domain-checker-d8640.appspot.com",
     messagingSenderId: "179110083249",
@@ -19,7 +18,7 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
-const db = getFirestore(app);
+const db = getDatabase(app);
 
 document.addEventListener('DOMContentLoaded', () => {
     const domainForm = document.getElementById('domain-form');
@@ -35,9 +34,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchDomains() {
         try {
-            const querySnapshot = await getDocs(collection(db, 'domains'));
-            domains = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            renderDomains();
+            const domainsRef = ref(db, 'domains');
+            const snapshot = await get(domainsRef);
+            if (snapshot.exists()) {
+                domains = Object.entries(snapshot.val()).map(([id, domain]) => ({ id, ...domain }));
+                renderDomains();
+            } else {
+                console.log("No data available");
+            }
         } catch (error) {
             console.error("Error fetching domains: ", error);
         }
@@ -47,16 +51,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const startIndex = (currentPage - 1) * itemsPerPage;
         const endIndex = startIndex + itemsPerPage;
         const paginatedDomains = domains.slice(startIndex, endIndex);
-        
+
         domainsContainer.innerHTML = paginatedDomains.map(domain => `
             <div class="domain-item">
                 <span>${domain.name}</span>
                 <div class="vote-buttons">
                     <button type="button" class="btn btn-danger" onclick="vote('${domain.id}', 'nogood');">
-                        <i class="uil uil-times font-size-14"></i> Spam <span class="count">${domain.nogoodCount}</span>
+                        <i class="uil uil-times font-size-14"></i> Spam <span class="count">${domain.nogoodCount || 0}</span>
                     </button>
                     <button type="button" class="btn btn-success" onclick="vote('${domain.id}', 'good');">
-                        <i class="uil uil-check font-size-14"></i> Safe <span class="count">${domain.goodCount}</span>
+                        <i class="uil uil-check font-size-14"></i> Safe <span class="count">${domain.goodCount || 0}</span>
                     </button>
                 </div>
             </div>
@@ -68,16 +72,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.vote = async function(domainId, voteType) {
         try {
-            const domainRef = doc(db, 'domains', domainId);
-            const domainSnapshot = await getDocs(query(collection(db, 'domains'), where('__name__', '==', domainId)));
+            const domainRef = ref(db, `domains/${domainId}`);
+            const snapshot = await get(domainRef);
 
-            if (!domainSnapshot.empty) {
-                const domainData = domainSnapshot.docs[0].data();
+            if (snapshot.exists()) {
+                const domainData = snapshot.val();
+                const updates = {};
                 if (voteType === 'nogood') {
-                    await updateDoc(domainRef, { nogoodCount: domainData.nogoodCount + 1 });
+                    updates.nogoodCount = (domainData.nogoodCount || 0) + 1;
                 } else if (voteType === 'good') {
-                    await updateDoc(domainRef, { goodCount: domainData.goodCount + 1 });
+                    updates.goodCount = (domainData.goodCount || 0) + 1;
                 }
+                await update(domainRef, updates);
                 fetchDomains();
             }
         } catch (error) {
@@ -90,13 +96,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const domainName = domainInput.value.trim();
         if (domainName) {
             try {
-                const existingDomains = await getDocs(query(collection(db, 'domains'), where('name', '==', domainName)));
-                if (existingDomains.empty) {
-                    await addDoc(collection(db, 'domains'), { name: domainName, goodCount: 0, nogoodCount: 0 });
+                const domainsRef = ref(db, 'domains');
+                const q = query(domainsRef, orderByChild('name'), equalTo(domainName));
+                const snapshot = await get(q);
+
+                if (snapshot.exists()) {
+                    alert('Domain already exists.');
+                } else {
+                    const newDomainRef = ref(db, 'domains').push();
+                    await set(newDomainRef, { name: domainName, goodCount: 0, nogoodCount: 0 });
                     domainInput.value = '';
                     fetchDomains();
-                } else {
-                    alert('Domain already exists.');
                 }
             } catch (error) {
                 console.error("Error adding domain: ", error);
@@ -114,10 +124,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span>${domain.name}</span>
                 <div class="vote-buttons">
                     <button type="button" class="btn btn-danger" onclick="vote('${domain.id}', 'nogood');">
-                        <i class="uil uil-times font-size-14"></i> Spam <span class="count">${domain.nogoodCount}</span>
+                        <i class="uil uil-times font-size-14"></i> Spam <span class="count">${domain.nogoodCount || 0}</span>
                     </button>
                     <button type="button" class="btn btn-success" onclick="vote('${domain.id}', 'good');">
-                        <i class="uil uil-check font-size-14"></i> Safe <span class="count">${domain.goodCount}</span>
+                        <i class="uil uil-check font-size-14"></i> Safe <span class="count">${domain.goodCount || 0}</span>
                     </button>
                 </div>
             </div>
