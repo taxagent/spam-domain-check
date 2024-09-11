@@ -1,9 +1,4 @@
-// Import the functions you need from the Firebase SDKs
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
-import { getDatabase, ref, set, get, update, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-analytics.js";
-
-// Your web app's Firebase configuration
+// Firebase configuration
 const firebaseConfig = {
     apiKey: "AIzaSyCbSCWDbBLiOdeFtFNo0ZBKhrDjVUr17r0",
     authDomain: "spam-domain-checker-d8640.firebaseapp.com",
@@ -16,9 +11,8 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-const db = getDatabase(app);
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
 document.addEventListener('DOMContentLoaded', () => {
     const domainForm = document.getElementById('domain-form');
@@ -34,8 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchDomains() {
         try {
-            const domainsRef = ref(db, 'domains');
-            const snapshot = await get(domainsRef);
+            const snapshot = await db.ref('domains').once('value');
             if (snapshot.exists()) {
                 domains = Object.entries(snapshot.val()).map(([id, domain]) => ({ id, ...domain }));
                 renderDomains();
@@ -72,8 +65,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.vote = async function(domainId, voteType) {
         try {
-            const domainRef = ref(db, `domains/${domainId}`);
-            const snapshot = await get(domainRef);
+            const domainRef = db.ref(`domains/${domainId}`);
+            const snapshot = await domainRef.once('value');
 
             if (snapshot.exists()) {
                 const domainData = snapshot.val();
@@ -83,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else if (voteType === 'good') {
                     updates.goodCount = (domainData.goodCount || 0) + 1;
                 }
-                await update(domainRef, updates);
+                await domainRef.update(updates);
                 fetchDomains();
             }
         } catch (error) {
@@ -96,15 +89,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const domainName = domainInput.value.trim();
         if (domainName) {
             try {
-                const domainsRef = ref(db, 'domains');
-                const q = query(domainsRef, orderByChild('name'), equalTo(domainName));
-                const snapshot = await get(q);
+                const domainsRef = db.ref('domains');
+                const snapshot = await domainsRef.orderByChild('name').equalTo(domainName).once('value');
 
                 if (snapshot.exists()) {
                     alert('Domain already exists.');
                 } else {
-                    const newDomainRef = ref(db, 'domains').push();
-                    await set(newDomainRef, { name: domainName, goodCount: 0, nogoodCount: 0 });
+                    const newDomainRef = domainsRef.push();
+                    await newDomainRef.set({ name: domainName, goodCount: 0, nogoodCount: 0 });
                     domainInput.value = '';
                     fetchDomains();
                 }
