@@ -3,11 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Spam Domain Checker - A tool to check if domains are reported as spam.">
-    <meta name="keywords" content="spam, phishing, domain check, spam domain checker">
     <title>Spam Domain Checker</title>
     <link rel="stylesheet" href="styles.css">
-    <!-- Firebase App (the core Firebase SDK) -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4619424414372862" crossorigin="anonymous"></script>
     <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-analytics.js"></script>
@@ -16,9 +14,7 @@
     <header>
         <h1>Spam Domain Checker</h1>
     </header>
-    <div id="ad-banner">
-        <!-- Google AdSense code -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4619424414372862" crossorigin="anonymous"></script>
+    <div class="ad-banner">
         <script>
             (adsbygoogle = window.adsbygoogle || []).push({
                 google_ad_client: "ca-pub-4619424414372862",
@@ -26,24 +22,161 @@
             });
         </script>
     </div>
-    <main>
-        <section id="search-section">
-            <input type="text" id="search-input" placeholder="Search for a domain...">
-        </section>
-        <section id="add-section">
-            <form id="domain-form">
-                <input type="text" id="domain-input" placeholder="Enter domain to add" required>
-                <button type="submit">Add Domain</button>
-            </form>
-        </section>
-        <section id="domains">
-            <!-- Domains will be rendered here -->
-        </section>
-        <section id="pagination">
-            <button id="prev-btn">Previous</button>
-            <button id="next-btn">Next</button>
-        </section>
-    </main>
-    <script type="module" src="scripts.js"></script>
+    <div class="main-container">
+        <form id="domain-form">
+            <input type="text" id="domain-input" placeholder="Enter domain" required>
+            <button type="submit">Add Domain</button>
+        </form>
+        <input type="text" id="search-input" placeholder="Search domains">
+        <div id="domains"></div>
+        <button id="prev-btn">Previous</button>
+        <button id="next-btn">Next</button>
+    </div>
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCbSCWDbBLiOdeFtFNo0ZBKhrDjVUr17r0",
+            authDomain: "spam-domain-checker-d8640.firebaseapp.com",
+            databaseURL: "https://spam-domain-checker-d8640-default-rtdb.firebaseio.com",
+            projectId: "spam-domain-checker-d8640",
+            storageBucket: "spam-domain-checker-d8640.appspot.com",
+            messagingSenderId: "179110083249",
+            appId: "1:179110083249:web:6c50f2f3daf7a97cb14090",
+            measurementId: "G-YBWD8MLJDS"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const domainForm = document.getElementById('domain-form');
+            const domainInput = document.getElementById('domain-input');
+            const searchInput = document.getElementById('search-input');
+            const domainsContainer = document.getElementById('domains');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+
+            let domains = [];
+            let currentPage = 1;
+            const itemsPerPage = 10;
+
+            async function fetchDomains() {
+                try {
+                    const snapshot = await db.ref('domains').once('value');
+                    if (snapshot.exists()) {
+                        domains = Object.entries(snapshot.val()).map(([id, domain]) => ({ id, ...domain }));
+                        renderDomains();
+                    } else {
+                        console.log("No data available");
+                    }
+                } catch (error) {
+                    console.error("Error fetching domains: ", error);
+                }
+            }
+
+            function renderDomains() {
+                const startIndex = (currentPage - 1) * itemsPerPage;
+                const endIndex = startIndex + itemsPerPage;
+                const paginatedDomains = domains.slice(startIndex, endIndex);
+
+                domainsContainer.innerHTML = paginatedDomains.map(domain => `
+                    <div class="domain-item">
+                        <span>${domain.name}</span>
+                        <div class="vote-buttons">
+                            <button type="button" class="btn btn-danger" onclick="vote('${domain.id}', 'nogood');">
+                                <i class="uil uil-times font-size-14"></i> Spam <span class="count">${domain.nogoodCount || 0}</span>
+                            </button>
+                            <button type="button" class="btn btn-success" onclick="vote('${domain.id}', 'good');">
+                                <i class="uil uil-check font-size-14"></i> Safe <span class="count">${domain.goodCount || 0}</span>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+                
+                prevBtn.disabled = currentPage === 1;
+                nextBtn.disabled = endIndex >= domains.length;
+            }
+
+            window.vote = async function(domainId, voteType) {
+                try {
+                    const domainRef = db.ref(`domains/${domainId}`);
+                    const snapshot = await domainRef.once('value');
+
+                    if (snapshot.exists()) {
+                        const domainData = snapshot.val();
+                        const updates = {};
+                        if (voteType === 'nogood') {
+                            updates.nogoodCount = (domainData.nogoodCount || 0) + 1;
+                        } else if (voteType === 'good') {
+                            updates.goodCount = (domainData.goodCount || 0) + 1;
+                        }
+                        await domainRef.update(updates);
+                        fetchDomains();
+                    }
+                } catch (error) {
+                    console.error("Error voting: ", error);
+                }
+            };
+
+            domainForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const domainName = domainInput.value.trim();
+                if (domainName) {
+                    try {
+                        const domainsRef = db.ref('domains');
+                        const snapshot = await domainsRef.orderByChild('name').equalTo(domainName).once('value');
+
+                        if (snapshot.exists()) {
+                            alert('Domain already exists.');
+                        } else {
+                            const newDomainRef = domainsRef.push();
+                            await newDomainRef.set({ name: domainName, goodCount: 0, nogoodCount: 0 });
+                            domainInput.value = '';
+                            fetchDomains();
+                        }
+                    } catch (error) {
+                        console.error("Error adding domain: ", error);
+                    }
+                } else {
+                    alert('Please enter a domain.');
+                }
+            });
+
+            searchInput.addEventListener('input', () => {
+                const queryText = searchInput.value.toLowerCase();
+                const filteredDomains = domains.filter(domain => domain.name.toLowerCase().includes(queryText));
+                domainsContainer.innerHTML = filteredDomains.map(domain => `
+                    <div class="domain-item">
+                        <span>${domain.name}</span>
+                        <div class="vote-buttons">
+                            <button type="button" class="btn btn-danger" onclick="vote('${domain.id}', 'nogood');">
+                                <i class="uil uil-times font-size-14"></i> Spam <span class="count">${domain.nogoodCount || 0}</span>
+                            </button>
+                            <button type="button" class="btn btn-success" onclick="vote('${domain.id}', 'good');">
+                                <i class="uil uil-check font-size-14"></i> Safe <span class="count">${domain.goodCount || 0}</span>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            });
+
+            prevBtn.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderDomains();
+                }
+            });
+
+            nextBtn.addEventListener('click', () => {
+                if ((currentPage * itemsPerPage) < domains.length) {
+                    currentPage++;
+                    renderDomains();
+                }
+            });
+
+            fetchDomains();
+        });
+    </script>
 </body>
 </html>
