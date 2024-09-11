@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
     domainForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const domainName = domainInput.value.trim();
-        if (validateDomain(domainName)) {
+        if (domainName) {
             const existingDomains = await getDocs(query(collection(db, 'domains'), where('name', '==', domainName)));
             if (existingDomains.empty) {
                 await addDoc(collection(db, 'domains'), { name: domainName, goodCount: 0, nogoodCount: 0 });
@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
             domainInput.value = '';
             fetchDomains();
         } else {
-            alert('Invalid domain name. Please enter a valid domain.');
+            alert('Please enter a domain.');
         }
     });
 
@@ -123,12 +123,6 @@ document.addEventListener('DOMContentLoaded', () => {
             renderDomains();
         }
     });
-
-    function validateDomain(domain) {
-        // Regex for validating domain names
-        const regex = /^(?!-)[A-Za-z0-9-]{1,63}(?<!-)\.(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,}$/i;
-        return regex.test(domain);
-    }
 
     fetchDomains();
 });
