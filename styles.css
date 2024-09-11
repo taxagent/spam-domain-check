@@ -1,17 +1,9 @@
 /* styles.css */
 
-/* Basic reset */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
 body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #f4f4f4;
 }
 
 header {
@@ -32,30 +24,16 @@ header {
 
 .search-add {
     margin-bottom: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
 }
 
 .search-add input[type="text"] {
     padding: 10px;
     width: calc(100% - 110px);
     margin-right: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
 }
 
 .search-add button {
     padding: 10px;
-    border: none;
-    background-color: #28a745;
-    color: #fff;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.search-add button:hover {
-    background-color: #218838;
 }
 
 .domain-list {
@@ -68,8 +46,6 @@ header {
     margin-bottom: 10px;
     padding: 10px;
     border: 1px solid #ddd;
-    background-color: #fff;
-    border-radius: 4px;
 }
 
 .vote-buttons {
@@ -78,29 +54,8 @@ header {
 }
 
 .vote-buttons button {
-    margin-right: 10px;
-    border: none;
+    margin-left: 10px;
     padding: 5px 10px;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.btn-success {
-    background-color: #28a745;
-    color: #fff;
-}
-
-.btn-success:hover {
-    background-color: #218838;
-}
-
-.btn-danger {
-    background-color: #dc3545;
-    color: #fff;
-}
-
-.btn-danger:hover {
-    background-color: #c82333;
 }
 
 .pagination {
@@ -110,18 +65,20 @@ header {
 
 .pagination button {
     padding: 10px;
-    border: none;
-    background-color: #007bff;
+    margin: 0 5px;
+}
+
+.btn-success {
+    background-color: #28a745;
     color: #fff;
-    border-radius: 4px;
-    cursor: pointer;
 }
 
-.pagination button:hover {
-    background-color: #0056b3;
+.btn-danger {
+    background-color: #dc3545;
+    color: #fff;
 }
 
-.pagination button:disabled {
+button:disabled {
     background-color: #ccc;
     cursor: not-allowed;
 }
