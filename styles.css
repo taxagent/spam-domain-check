@@ -1,5 +1,3 @@
-/* styles.css */
-
 body {
     font-family: Arial, sans-serif;
     margin: 0;
@@ -9,76 +7,45 @@ body {
 header {
     background-color: #333;
     color: #fff;
-    padding: 10px;
+    padding: 15px;
     text-align: center;
 }
 
-.ad-banner {
-    text-align: center;
+#ad-banner {
     margin: 10px 0;
 }
 
-.content {
+main {
     padding: 20px;
 }
 
-.search-add {
+#search-section, #add-section, #pagination {
     margin-bottom: 20px;
 }
 
-.search-add input[type="text"] {
+#domain-form input, #domain-form button {
     padding: 10px;
-    width: calc(100% - 110px);
-    margin-right: 10px;
+    margin: 5px;
 }
 
-.search-add button {
+#domains {
+    border: 1px solid #ddd;
     padding: 10px;
-}
-
-.domain-list {
-    margin-top: 20px;
+    margin-bottom: 20px;
 }
 
 .domain-item {
-    display: flex;
-    justify-content: space-between;
     margin-bottom: 10px;
     padding: 10px;
-    border: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
 }
 
 .vote-buttons {
     display: flex;
-    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
 }
 
 .vote-buttons button {
-    margin-left: 10px;
     padding: 5px 10px;
-}
-
-.pagination {
-    margin-top: 20px;
-    text-align: center;
-}
-
-.pagination button {
-    padding: 10px;
-    margin: 0 5px;
-}
-
-.btn-success {
-    background-color: #28a745;
-    color: #fff;
-}
-
-.btn-danger {
-    background-color: #dc3545;
-    color: #fff;
-}
-
-button:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
 }
