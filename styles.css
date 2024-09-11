@@ -1,77 +1,97 @@
-body {
-    font-family: Arial, sans-serif;
+/* Reset some default browser styles */
+body, h1, input, button {
     margin: 0;
     padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    background-color: #f4f4f4;
+    padding: 0 10px;
 }
 
 header {
-    background-color: #4CAF50;
-    color: white;
+    background: #333;
+    color: #fff;
+    padding: 10px 0;
     text-align: center;
-    padding: 1em;
 }
 
-.ad-banner {
-    text-align: center;
-    margin: 1em 0;
+h1 {
+    margin: 0;
 }
 
-.main-container {
-    padding: 1em;
+.main-content {
+    margin: 20px auto;
     max-width: 800px;
-    margin: auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-#domain-form {
-    margin-bottom: 1em;
+form {
+    margin-bottom: 20px;
 }
 
-#domain-input {
-    padding: 0.5em;
+input[type="text"] {
     width: calc(100% - 120px);
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
 }
 
 button {
-    padding: 0.5em 1em;
-    margin-left: 10px;
-}
-
-.btn {
+    padding: 10px 20px;
     border: none;
+    border-radius: 4px;
+    background: #007bff;
+    color: #fff;
     cursor: pointer;
 }
 
-.btn-danger {
-    background-color: #f44336;
-    color: white;
-}
-
-.btn-success {
-    background-color: #4CAF50;
-    color: white;
+button:hover {
+    background: #0056b3;
 }
 
 #domains {
-    margin-top: 1em;
+    margin: 20px 0;
 }
 
 .domain-item {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    padding: 0.5em;
+    padding: 10px;
     border-bottom: 1px solid #ddd;
 }
 
-.vote-buttons {
+.domain-item:last-child {
+    border-bottom: none;
+}
+
+.domain-item button {
+    margin-left: 10px;
+}
+
+.pagination {
     display: flex;
-    gap: 10px;
+    justify-content: space-between;
 }
 
-button i {
-    margin-right: 5px;
+.pagination button {
+    background: #28a745;
+    color: #fff;
 }
 
-#prev-btn, #next-btn {
-    margin-top: 1em;
+.pagination button:hover {
+    background: #218838;
+}
+
+footer {
+    text-align: center;
+    padding: 10px;
+    background: #333;
+    color: #fff;
 }
