@@ -11,65 +11,8 @@
     <meta property="og:url" content="YOUR_WEBSITE_URL">
     <meta name="twitter:card" content="summary_large_image">
     <title>Spam Domain Checker</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@iconscout/unicons/css/line.css">
-    <style>
-        /* Add your CSS styles here */
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-        header {
-            background-color: #333;
-            color: #fff;
-            padding: 10px;
-            text-align: center;
-        }
-        .ad-banner {
-            text-align: center;
-            margin: 10px 0;
-        }
-        .content {
-            padding: 20px;
-        }
-        .search-add {
-            margin-bottom: 20px;
-        }
-        .search-add input[type="text"] {
-            padding: 10px;
-            width: calc(100% - 110px);
-            margin-right: 10px;
-        }
-        .search-add button {
-            padding: 10px;
-        }
-        .domain-list {
-            margin-top: 20px;
-        }
-        .domain-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            padding: 10px;
-            border: 1px solid #ddd;
-        }
-        .vote-buttons {
-            display: flex;
-            align-items: center;
-        }
-        .vote-buttons button {
-            margin-right: 10px;
-        }
-        .pagination {
-            margin-top: 20px;
-            text-align: center;
-        }
-        .pagination button {
-            padding: 10px;
-            margin: 0 5px;
-        }
-    </style>
 </head>
 <body>
     <header>
@@ -109,7 +52,7 @@
 
     <!-- Firebase SDK and Firestore Integration -->
     <script type="module">
-        // Import the functions you need from the SDKs you need
+        // Import the functions you need from the Firebase SDKs
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-analytics.js";
         import { getFirestore, collection, addDoc, getDocs, query, where, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
@@ -189,7 +132,7 @@
             domainForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const domainName = domainInput.value.trim();
-                if (validateDomain(domainName)) {
+                if (domainName) {
                     const existingDomains = await getDocs(query(collection(db, 'domains'), where('name', '==', domainName)));
                     if (existingDomains.empty) {
                         await addDoc(collection(db, 'domains'), { name: domainName, goodCount: 0, nogoodCount: 0 });
@@ -197,13 +140,13 @@
                     domainInput.value = '';
                     fetchDomains();
                 } else {
-                    alert('Invalid domain name. Please enter a valid domain.');
+                    alert('Please enter a domain.');
                 }
             });
 
             searchInput.addEventListener('input', async () => {
-                const query = searchInput.value.toLowerCase();
-                const filteredDomains = domains.filter(domain => domain.name.toLowerCase().includes(query));
+                const queryText = searchInput.value.toLowerCase();
+                const filteredDomains = domains.filter(domain => domain.name.toLowerCase().includes(queryText));
                 domainsContainer.innerHTML = filteredDomains.map(domain => `
                     <div class="domain-item">
                         <span>${domain.name}</span>
@@ -232,12 +175,6 @@
                     renderDomains();
                 }
             });
-
-            function validateDomain(domain) {
-                // Updated regex for better domain validation
-                const regex = /^(?!-)[A-Za-z0-9-]{1,63}(?<!-)\.(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,}$/i;
-                return regex.test(domain);
-            }
 
             fetchDomains();
         });
