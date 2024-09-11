@@ -1,4 +1,4 @@
-// Firebase configuration
+// Initialize Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyCbSCWDbBLiOdeFtFNo0ZBKhrDjVUr17r0",
     authDomain: "spam-domain-checker-d8640.firebaseapp.com",
@@ -10,7 +10,6 @@ const firebaseConfig = {
     measurementId: "G-YBWD8MLJDS"
 };
 
-// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
