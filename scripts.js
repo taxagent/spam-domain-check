@@ -119,8 +119,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function validateDomain(domain) {
+    // Simple regex for validating domain names, allowing for a wide range of valid domain formats
         const regex = /^(?!-)[A-Za-z0-9-]{1,63}(?<!-)\.(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,}$/i;
         return regex.test(domain);
+}
+
     }
 
     fetchDomains();
