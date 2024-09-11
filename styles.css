@@ -1,50 +1,50 @@
 body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
 }
 
 header {
-    background-color: #333;
-    color: #fff;
-    padding: 10px 20px;
-    text-align: center;
+  background-color: #333;
+  color: #fff;
+  padding: 10px 20px;
+  text-align: center;
 }
 
 .main-content {
-    padding: 20px;
+  padding: 20px;
 }
 
 #domain-form {
-    margin-bottom: 20px;
+  margin-bottom: 20px;
 }
 
 #domain-form input {
-    margin-right: 10px;
-    padding: 5px;
+  margin-right: 10px;
+  padding: 5px;
 }
 
 #domain-form button {
-    padding: 5px 10px;
+  padding: 5px 10px;
 }
 
 #domains {
-    margin-top: 20px;
+  margin-top: 20px;
 }
 
 .domain-item {
-    margin-bottom: 10px;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
+  margin-bottom: 10px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
 }
 
 .pagination {
-    margin-top: 20px;
-    text-align: center;
+  margin-top: 20px;
+  text-align: center;
 }
 
 .pagination button {
-    padding: 5px 10px;
-    margin: 0 5px;
+  padding: 5px 10px;
+  margin: 0 5px;
 }
