@@ -1,37 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spam Domain Checker</title>
-    <meta name="description" content="Check and report suspicious domains.">
-    <meta name="keywords" content="spam, phishing, domain check, email security">
-    <meta name="author" content="Your Name">
-    <link rel="stylesheet" href="styles.css">
-    
-    <!-- Firebase App (the core Firebase SDK) -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spam Domain Checker</title>
+  <meta name="description" content="Check and report suspicious domains.">
+  <meta name="keywords" content="spam, phishing, domain check, email security">
+  <meta name="author" content="Your Name">
+  <link rel="stylesheet" href="styles.css">
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js"></script>
 </head>
 <body>
-    <header>
-        <h1>Spam Domain Checker</h1>
-    </header>
-    <section class="main-content">
-        <form id="domain-form">
-            <input type="text" id="domain-input" placeholder="Enter suspicious domain" required>
-            <button type="submit">Add Domain</button>
-        </form>
-        <input type="text" id="search-input" placeholder="Search domains">
-        <div id="domains"></div>
-        <div class="pagination">
-            <button id="prev-btn">Previous</button>
-            <button id="next-btn">Next</button>
-        </div>
-    </section>
-    <footer>
-        <p>&copy; 2024 Spam Domain Checker</p>
-    </footer>
-    <script src="scripts.js"></script>
+  <header>
+    <h1>Spam Domain Checker</h1>
+  </header>
+  <section class="main-content">
+    <form id="domain-form">
+      <input type="text" id="domain-input" placeholder="Enter suspicious domain" required>
+      <button type="submit">Add Domain</button>
+    </form>
+    <input type="text" id="search-input" placeholder="Search domains">
+    <div id="domains"></div>
+    <div class="pagination">
+      <button id="prev-btn">Previous</button>
+      <button id="next-btn">Next</button>
+    </div>
+  </section>
+  <footer>
+    <p>&copy; 2024 Spam Domain Checker</p>
+  </footer>
+  <script src="scripts.js"></script>
 </body>
 </html>
