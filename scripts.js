@@ -1,21 +1,27 @@
 // scripts.js
+
+// Import the functions you need from the Firebase SDKs
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-analytics.js";
+import { getFirestore, collection, addDoc, getDocs, query, where, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyCbSCWDbBLiOdeFtFNo0ZBKhrDjVUr17r0",
+    authDomain: "spam-domain-checker-d8640.firebaseapp.com",
+    projectId: "spam-domain-checker-d8640",
+    storageBucket: "spam-domain-checker-d8640.appspot.com",
+    messagingSenderId: "179110083249",
+    appId: "1:179110083249:web:6c50f2f3daf7a97cb14090",
+    measurementId: "G-YBWD8MLJDS"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+const db = getFirestore(app);
+
 document.addEventListener('DOMContentLoaded', () => {
-    // Firebase configuration
-    const firebaseConfig = {
-        apiKey: "AIzaSyCbSCWDbBLiOdeFtFNo0ZBKhrDjVUr17r0",
-        authDomain: "spam-domain-checker-d8640.firebaseapp.com",
-        projectId: "spam-domain-checker-d8640",
-        storageBucket: "spam-domain-checker-d8640.appspot.com",
-        messagingSenderId: "179110083249",
-        appId: "1:179110083249:web:6c50f2f3daf7a97cb14090",
-        measurementId: "G-YBWD8MLJDS"
-    };
-
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
-    const db = getFirestore(app);
-
     const domainForm = document.getElementById('domain-form');
     const domainInput = document.getElementById('domain-input');
     const searchInput = document.getElementById('search-input');
@@ -87,8 +93,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     searchInput.addEventListener('input', async () => {
-        const query = searchInput.value.toLowerCase();
-        const filteredDomains = domains.filter(domain => domain.name.toLowerCase().includes(query));
+        const queryText = searchInput.value.toLowerCase();
+        const filteredDomains = domains.filter(domain => domain.name.toLowerCase().includes(queryText));
         domainsContainer.innerHTML = filteredDomains.map(domain => `
             <div class="domain-item">
                 <span>${domain.name}</span>
@@ -119,11 +125,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function validateDomain(domain) {
-    // Simple regex for validating domain names, allowing for a wide range of valid domain formats
+        // Regex for validating domain names
         const regex = /^(?!-)[A-Za-z0-9-]{1,63}(?<!-)\.(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,}$/i;
         return regex.test(domain);
-}
-
     }
 
     fetchDomains();
