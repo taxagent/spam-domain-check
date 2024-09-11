@@ -34,9 +34,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const itemsPerPage = 10;
 
     async function fetchDomains() {
-        const querySnapshot = await getDocs(collection(db, 'domains'));
-        domains = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        renderDomains();
+        try {
+            const querySnapshot = await getDocs(collection(db, 'domains'));
+            domains = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            renderDomains();
+        } catch (error) {
+            console.error("Error fetching domains: ", error);
+        }
     }
 
     function renderDomains() {
@@ -63,17 +67,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     window.vote = async function(domainId, voteType) {
-        const domainRef = doc(db, 'domains', domainId);
-        const domainSnapshot = await getDocs(query(collection(db, 'domains'), where('__name__', '==', domainId)));
+        try {
+            const domainRef = doc(db, 'domains', domainId);
+            const domainSnapshot = await getDocs(query(collection(db, 'domains'), where('__name__', '==', domainId)));
 
-        if (!domainSnapshot.empty) {
-            const domainData = domainSnapshot.docs[0].data();
-            if (voteType === 'nogood') {
-                await updateDoc(domainRef, { nogoodCount: domainData.nogoodCount + 1 });
-            } else if (voteType === 'good') {
-                await updateDoc(domainRef, { goodCount: domainData.goodCount + 1 });
+            if (!domainSnapshot.empty) {
+                const domainData = domainSnapshot.docs[0].data();
+                if (voteType === 'nogood') {
+                    await updateDoc(domainRef, { nogoodCount: domainData.nogoodCount + 1 });
+                } else if (voteType === 'good') {
+                    await updateDoc(domainRef, { goodCount: domainData.goodCount + 1 });
+                }
+                fetchDomains();
             }
-            fetchDomains();
+        } catch (error) {
+            console.error("Error voting: ", error);
         }
     };
 
@@ -81,18 +89,24 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const domainName = domainInput.value.trim();
         if (domainName) {
-            const existingDomains = await getDocs(query(collection(db, 'domains'), where('name', '==', domainName)));
-            if (existingDomains.empty) {
-                await addDoc(collection(db, 'domains'), { name: domainName, goodCount: 0, nogoodCount: 0 });
+            try {
+                const existingDomains = await getDocs(query(collection(db, 'domains'), where('name', '==', domainName)));
+                if (existingDomains.empty) {
+                    await addDoc(collection(db, 'domains'), { name: domainName, goodCount: 0, nogoodCount: 0 });
+                    domainInput.value = '';
+                    fetchDomains();
+                } else {
+                    alert('Domain already exists.');
+                }
+            } catch (error) {
+                console.error("Error adding domain: ", error);
             }
-            domainInput.value = '';
-            fetchDomains();
         } else {
             alert('Please enter a domain.');
         }
     });
 
-    searchInput.addEventListener('input', async () => {
+    searchInput.addEventListener('input', () => {
         const queryText = searchInput.value.toLowerCase();
         const filteredDomains = domains.filter(domain => domain.name.toLowerCase().includes(queryText));
         domainsContainer.innerHTML = filteredDomains.map(domain => `
