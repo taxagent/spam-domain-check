@@ -14,131 +14,97 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-document.addEventListener('DOMContentLoaded', () => {
-    const domainForm = document.getElementById('domain-form');
-    const domainInput = document.getElementById('domain-input');
-    const searchInput = document.getElementById('search-input');
-    const domainsContainer = document.getElementById('domains');
-    const prevBtn = document.getElementById('prev-btn');
-    const nextBtn = document.getElementById('next-btn');
+const domainForm = document.getElementById('domain-form');
+const domainInput = document.getElementById('domain-input');
+const searchInput = document.getElementById('search-input');
+const domainsDiv = document.getElementById('domains');
+const prevBtn = document.getElementById('prev-btn');
+const nextBtn = document.getElementById('next-btn');
 
-    let domains = [];
-    let currentPage = 1;
-    const itemsPerPage = 10;
+let currentPage = 1;
+const itemsPerPage = 10;
+let domains = [];
 
-    async function fetchDomains() {
-        try {
-            const snapshot = await db.ref('domains').once('value');
-            if (snapshot.exists()) {
-                domains = Object.entries(snapshot.val()).map(([id, domain]) => ({ id, ...domain }));
-                renderDomains();
-            } else {
-                console.log("No data available");
-            }
-        } catch (error) {
-            console.error("Error fetching domains: ", error);
-        }
-    }
-
-    function renderDomains() {
-        const startIndex = (currentPage - 1) * itemsPerPage;
-        const endIndex = startIndex + itemsPerPage;
-        const paginatedDomains = domains.slice(startIndex, endIndex);
-
-        domainsContainer.innerHTML = paginatedDomains.map(domain => `
-            <div class="domain-item">
-                <span>${domain.name}</span>
-                <div class="vote-buttons">
-                    <button type="button" class="btn btn-danger" onclick="vote('${domain.id}', 'nogood');">
-                        <i class="uil uil-times font-size-14"></i> Spam <span class="count">${domain.nogoodCount || 0}</span>
-                    </button>
-                    <button type="button" class="btn btn-success" onclick="vote('${domain.id}', 'good');">
-                        <i class="uil uil-check font-size-14"></i> Safe <span class="count">${domain.goodCount || 0}</span>
-                    </button>
-                </div>
-            </div>
-        `).join('');
-        
-        prevBtn.disabled = currentPage === 1;
-        nextBtn.disabled = endIndex >= domains.length;
-    }
-
-    window.vote = async function(domainId, voteType) {
-        try {
-            const domainRef = db.ref(`domains/${domainId}`);
-            const snapshot = await domainRef.once('value');
-
-            if (snapshot.exists()) {
-                const domainData = snapshot.val();
-                const updates = {};
-                if (voteType === 'nogood') {
-                    updates.nogoodCount = (domainData.nogoodCount || 0) + 1;
-                } else if (voteType === 'good') {
-                    updates.goodCount = (domainData.goodCount || 0) + 1;
-                }
-                await domainRef.update(updates);
+domainForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const domain = domainInput.value.trim();
+    if (domain) {
+        db.ref('domains').push({ name: domain, spamCount: 0, safeCount: 0 })
+            .then(() => {
+                domainInput.value = '';
                 fetchDomains();
-            }
-        } catch (error) {
-            console.error("Error voting: ", error);
-        }
-    };
-
-    domainForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const domainName = domainInput.value.trim();
-        if (domainName) {
-            try {
-                const domainsRef = db.ref('domains');
-                const snapshot = await domainsRef.orderByChild('name').equalTo(domainName).once('value');
-
-                if (snapshot.exists()) {
-                    alert('Domain already exists.');
-                } else {
-                    const newDomainRef = domainsRef.push();
-                    await newDomainRef.set({ name: domainName, goodCount: 0, nogoodCount: 0 });
-                    domainInput.value = '';
-                    fetchDomains();
-                }
-            } catch (error) {
-                console.error("Error adding domain: ", error);
-            }
-        } else {
-            alert('Please enter a domain.');
-        }
-    });
-
-    searchInput.addEventListener('input', () => {
-        const queryText = searchInput.value.toLowerCase();
-        const filteredDomains = domains.filter(domain => domain.name.toLowerCase().includes(queryText));
-        domainsContainer.innerHTML = filteredDomains.map(domain => `
-            <div class="domain-item">
-                <span>${domain.name}</span>
-                <div class="vote-buttons">
-                    <button type="button" class="btn btn-danger" onclick="vote('${domain.id}', 'nogood');">
-                        <i class="uil uil-times font-size-14"></i> Spam <span class="count">${domain.nogoodCount || 0}</span>
-                    </button>
-                    <button type="button" class="btn btn-success" onclick="vote('${domain.id}', 'good');">
-                        <i class="uil uil-check font-size-14"></i> Safe <span class="count">${domain.goodCount || 0}</span>
-                    </button>
-                </div>
-            </div>
-        `).join('');
-    });
-
-    prevBtn.addEventListener('click', () => {
-        if (currentPage > 1) {
-            currentPage--;
-            renderDomains();
-        }
-    });
-
-    nextBtn.addEventListener('click', () => {
-        if ((currentPage * itemsPerPage) < domains.length) {
-            currentPage++;
-            renderDomains();
-        }
-    });
-
-    fetchDomains();
+            })
+            .catch((error) => console.error('Error adding domain:', error));
+    }
 });
+
+searchInput.addEventListener('input', fetchDomains);
+
+function fetchDomains() {
+    const searchTerm = searchInput.value.trim().toLowerCase();
+    db.ref('domains').once('value')
+        .then(snapshot => {
+            domains = [];
+            snapshot.forEach(childSnapshot => {
+                const domain = childSnapshot.val();
+                domain.key = childSnapshot.key;
+                if (domain.name.toLowerCase().includes(searchTerm)) {
+                    domains.push(domain);
+                }
+            });
+            renderDomains();
+        })
+        .catch((error) => console.error('Error fetching domains:', error));
+}
+
+function renderDomains() {
+    domainsDiv.innerHTML = '';
+    const start = (currentPage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    const paginatedDomains = domains.slice(start, end);
+    
+    paginatedDomains.forEach(domain => {
+        const domainItem = document.createElement('div');
+        domainItem.className = 'domain-item';
+        domainItem.innerHTML = `
+            ${domain.name}
+            <div>
+                <button onclick="vote('${domain.key}', 'spam')">Spam ${domain.spamCount || 0}</button>
+                <button onclick="vote('${domain.key}', 'safe')">Safe ${domain.safeCount || 0}</button>
+            </div>
+        `;
+        domainsDiv.appendChild(domainItem);
+    });
+
+    prevBtn.style.display = currentPage === 1 ? 'none' : 'inline-block';
+    nextBtn.style.display = end >= domains.length ? 'none' : 'inline-block';
+}
+
+function vote(key, type) {
+    const ref = db.ref(`domains/${key}`);
+    ref.transaction(domain => {
+        if (domain) {
+            domain[`${type}Count`] = (domain[`${type}Count`] || 0) + 1;
+        }
+        return domain;
+    })
+    .then(() => fetchDomains())
+    .catch((error) => console.error('Error voting:', error));
+}
+
+prevBtn.addEventListener('click', () => {
+    if (currentPage > 1) {
+        currentPage--;
+        fetchDomains();
+    }
+});
+
+nextBtn.addEventListener('click', () => {
+    if (currentPage * itemsPerPage < domains.length) {
+        currentPage++;
+        fetchDomains();
+    }
+});
+
+// Initial fetch
+fetchDomains();
