@@ -1,6 +1,6 @@
 // Import the necessary Firebase modules
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, doc, updateDoc, getDoc } from 'firebase/firestore';
+import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, doc, updateDoc, getDoc, startAt, endAt } from 'firebase/firestore';
 
 // Your Firebase configuration
 const firebaseConfig = {
@@ -100,9 +100,50 @@ window.vote = async function(domainName, voteType) {
 // Initial load
 loadDomains();
 
-// Search functionality (add this part)
+// Search functionality
 searchButton.addEventListener('click', async () => {
   const searchTerm = searchInput.value.trim().toLowerCase();
   if (searchTerm) {
     const domainsRef = collection(db, 'domains');
-    const domainsQuery = query(domainsRef, orderBy('name'), startAt(searchTerm), endAt(searchTerm + '\
+    const domainsQuery = query(
+      domainsRef,
+      orderBy('name'),
+      startAt(searchTerm),
+      endAt(searchTerm + '\uf8ff') // Ensure proper range for searching
+    );
+
+    try {
+      const querySnapshot = await getDocs(domainsQuery);
+      domainsContainer.innerHTML = '';
+      querySnapshot.forEach((doc) => {
+        const domain = doc.data();
+        const domainName = doc.id;
+        const domainElement = document.createElement('div');
+        domainElement.className = 'domain-item';
+        domainElement.innerHTML = `
+          <span>${domainName}</span>
+          <div>
+            <button class="spam" onclick="vote('${domainName}', 'spam')">Spam (${domain.spam})</button>
+            <button class="safe" onclick="vote('${domainName}', 'safe')">Safe (${domain.safe})</button>
+          </div>
+        `;
+        domainsContainer.appendChild(domainElement);
+      });
+    } catch (error) {
+      console.error('Error searching domains:', error);
+    }
+  }
+});
+
+// Pagination functionality
+prevButton.addEventListener('click', () => {
+  if (currentPage > 1) {
+    currentPage--;
+    loadDomains();
+  }
+});
+
+nextButton.addEventListener('click', () => {
+  currentPage++;
+  loadDomains();
+});
