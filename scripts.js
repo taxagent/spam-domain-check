@@ -1,8 +1,11 @@
+// Import the necessary Firebase modules
+import { initializeApp } from 'firebase/app';
+import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit } from 'firebase/firestore';
+
 // Your Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyCbSCWDbBLiOdeFtFNo0ZBKhrDjVUr17r0",
   authDomain: "spam-domain-checker-d8640.firebaseapp.com",
-  databaseURL: "https://spam-domain-checker-d8640-default-rtdb.firebaseio.com",
   projectId: "spam-domain-checker-d8640",
   storageBucket: "spam-domain-checker-d8640.appspot.com",
   messagingSenderId: "179110083249",
@@ -11,8 +14,8 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = firebase.initializeApp(firebaseConfig);
-const db = firebase.database(app);
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 // DOM elements
 const domainInput = document.getElementById('domain-input');
@@ -27,76 +30,71 @@ const nextButton = document.getElementById('next-button');
 let currentPage = 1;
 const domainsPerPage = 10;
 
-// Add domain to the database
-addDomainButton.addEventListener('click', () => {
+// Add domain to Firestore
+addDomainButton.addEventListener('click', async () => {
   const domain = domainInput.value.trim();
   if (domain) {
-    const domainRef = db.ref('domains/' + domain);
-    domainRef.set({
-      name: domain,
-      spam: 0,
-      safe: 0
-    }).then(() => {
+    try {
+      await addDoc(collection(db, 'domains'), {
+        name: domain,
+        spam: 0,
+        safe: 0
+      });
       domainInput.value = '';
       loadDomains();
-    }).catch((error) => {
+    } catch (error) {
       console.error('Error adding domain:', error);
-    });
+    }
   } else {
     alert('Please enter a domain.');
   }
 });
 
-// Load domains from the database
-function loadDomains() {
+// Load domains from Firestore
+async function loadDomains() {
   const startAtIndex = (currentPage - 1) * domainsPerPage;
-  const domainsRef = db.ref('domains');
-  const domainsQuery = domainsRef.orderByKey().limitToFirst(domainsPerPage);
+  const domainsRef = collection(db, 'domains');
+  const domainsQuery = query(domainsRef, orderBy('name'), limit(domainsPerPage));
 
-  domainsQuery.once('value', (snapshot) => {
-    if (snapshot.exists()) {
-      domainsContainer.innerHTML = '';
-      snapshot.forEach((childSnapshot) => {
-        const domain = childSnapshot.val();
-        const domainName = childSnapshot.key;
-        const domainElement = document.createElement('div');
-        domainElement.className = 'domain-item';
-        domainElement.innerHTML = `
-          <span>${domainName}</span>
-          <div>
-            <button class="spam" onclick="vote('${domainName}', 'spam')">Spam (${domain.spam})</button>
-            <button class="safe" onclick="vote('${domainName}', 'safe')">Safe (${domain.safe})</button>
-          </div>
-        `;
-        domainsContainer.appendChild(domainElement);
-      });
-    } else {
-      domainsContainer.innerHTML = '<p>No domains available.</p>';
-    }
-  }).catch((error) => {
+  try {
+    const querySnapshot = await getDocs(domainsQuery);
+    domainsContainer.innerHTML = '';
+    querySnapshot.forEach((doc) => {
+      const domain = doc.data();
+      const domainName = doc.id;
+      const domainElement = document.createElement('div');
+      domainElement.className = 'domain-item';
+      domainElement.innerHTML = `
+        <span>${domainName}</span>
+        <div>
+          <button class="spam" onclick="vote('${domainName}', 'spam')">Spam (${domain.spam})</button>
+          <button class="safe" onclick="vote('${domainName}', 'safe')">Safe (${domain.safe})</button>
+        </div>
+      `;
+      domainsContainer.appendChild(domainElement);
+    });
+  } catch (error) {
     console.error('Error loading domains:', error);
-  });
+  }
 }
 
 // Handle voting
-window.vote = function(domainName, voteType) {
-  const domainRef = db.ref('domains/' + domainName);
-  domainRef.once('value', (snapshot) => {
-    if (snapshot.exists()) {
-      const domain = snapshot.val();
-      domainRef.update({
+window.vote = async function(domainName, voteType) {
+  const domainRef = doc(db, 'domains', domainName);
+  try {
+    const docSnap = await getDoc(domainRef);
+    if (docSnap.exists()) {
+      const domain = docSnap.data();
+      await updateDoc(domainRef, {
         [voteType]: (domain[voteType] || 0) + 1
-      }).then(() => {
-        loadDomains();
-      }).catch((error) => {
-        console.error('Error voting:', error);
       });
+      loadDomains();
     } else {
       console.error('Domain does not exist.');
     }
-  }).catch((error) => {
-    console.error('Error retrieving domain:', error);
-  });
+  } catch (error) {
+    console.error('Error updating domain:', error);
+  }
 };
 
 // Initial load
