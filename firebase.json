@@ -4,8 +4,7 @@
     "ignore": [
       "firebase.json",
       "**/.*",
-      "**/node_modules/**",
-      "**/*.js" // Exclude JavaScript files from deployment
+      "**/node_modules/**"
     ]
   }
 }
