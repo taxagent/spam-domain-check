@@ -1,6 +1,6 @@
 // Import the necessary Firebase modules
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit } from 'firebase/firestore';
+import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, doc, updateDoc, getDoc } from 'firebase/firestore';
 
 // Your Firebase configuration
 const firebaseConfig = {
@@ -99,3 +99,10 @@ window.vote = async function(domainName, voteType) {
 
 // Initial load
 loadDomains();
+
+// Search functionality (add this part)
+searchButton.addEventListener('click', async () => {
+  const searchTerm = searchInput.value.trim().toLowerCase();
+  if (searchTerm) {
+    const domainsRef = collection(db, 'domains');
+    const domainsQuery = query(domainsRef, orderBy('name'), startAt(searchTerm), endAt(searchTerm + '\
