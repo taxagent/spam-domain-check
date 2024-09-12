@@ -1,0 +1,20 @@
+{
+    "name": "my-firebase-project",
+    "version": "1.0.0",
+    "description": "A basic web project hosted on Firebase",
+    "main": "index.js",
+    "scripts": {
+      "start": "http-server ./public",
+      "build": "echo 'No build step defined'",
+      "deploy": "firebase deploy"
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+      "http-server": "^14.1.1"
+    },
+    "devDependencies": {
+      "firebase": "^10.0.0"
+    }
+  }
+  
