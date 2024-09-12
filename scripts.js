@@ -1,6 +1,5 @@
-// Import the necessary Firebase modules
-import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, doc, updateDoc, getDoc, startAt, endAt } from 'firebase/firestore';
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js';
+import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, doc, updateDoc, getDoc, startAt, endAt } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';
 
 // Your Firebase configuration
 const firebaseConfig = {
@@ -105,12 +104,7 @@ searchButton.addEventListener('click', async () => {
   const searchTerm = searchInput.value.trim().toLowerCase();
   if (searchTerm) {
     const domainsRef = collection(db, 'domains');
-    const domainsQuery = query(
-      domainsRef,
-      orderBy('name'),
-      startAt(searchTerm),
-      endAt(searchTerm + '\uf8ff') // Ensure proper range for searching
-    );
+    const domainsQuery = query(domainsRef, orderBy('name'), startAt(searchTerm), endAt(searchTerm + '\uf8ff'));
 
     try {
       const querySnapshot = await getDocs(domainsQuery);
@@ -132,18 +126,7 @@ searchButton.addEventListener('click', async () => {
     } catch (error) {
       console.error('Error searching domains:', error);
     }
+  } else {
+    alert('Please enter a search term.');
   }
-});
-
-// Pagination functionality
-prevButton.addEventListener('click', () => {
-  if (currentPage > 1) {
-    currentPage--;
-    loadDomains();
-  }
-});
-
-nextButton.addEventListener('click', () => {
-  currentPage++;
-  loadDomains();
 });
